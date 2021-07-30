@@ -5,7 +5,8 @@ import "github.com/df-mc/dragonfly/server/player"
 var sessions = map[string]*Session{}
 
 func New(p *player.Player) *Session {
-	session := Session{Player: p}.DefaultFlags()
+	session := &Session{Player: p}
+	session.DefaultFlags()
 	sessions[p.Name()] = session
 	return session
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"VBridge/dfutils/exts"
 	"VBridge/session"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/block/cube"
@@ -18,21 +19,37 @@ type PlayerHandler struct {
 	Session *session.Session
 }
 
-func (PlayerHandler) HandleBlockPlace(ctx *event.Context, pos cube.Pos, block world.Block) {
-
+func (h PlayerHandler) HandleBlockPlace(ctx *event.Context, _ cube.Pos, _ world.Block) {
+	if h.Player.World().Name() == "World" {
+		if !h.Session.HasFlag(session.Builder) {
+			ctx.Cancel()
+		}
+	} else {
+		// determine if they can place blocks in the match
+	}
 }
 
-func (PlayerHandler) HandleBlockBreak(ctx *event.Context, pos cube.Pos) {
-
+func (h PlayerHandler) HandleBlockBreak(ctx *event.Context, _ cube.Pos) {
+	if h.Player.World().Name() == "World" {
+		if !h.Session.HasFlag(session.Builder) {
+			ctx.Cancel()
+		}
+	} else {
+		// determine if they can break blocks in the match
+	}
 }
 
 func (h PlayerHandler) HandleHurt(ctx *event.Context, _ *float64, source damage.Source) {
 	if (source == damage.SourceVoid{}) {
-
+		if h.Player.World().Name() == "World" {
+			ctx.Cancel()
+			h.Player.Teleport(exts.Srv.World().Spawn().Vec3())
+		} else {
+			// session.game.get their spawn
+		}
 	}
 	if h.Player.World().Name() == "World" {
 		ctx.Cancel()
-		return
 	}
 }
 

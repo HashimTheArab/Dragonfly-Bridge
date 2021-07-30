@@ -1,0 +1,7 @@
+[Staff]
+  # A list of admins, these players will have permission to every command
+  # entrys can be either a name or xuid
+  Admins = ["2535468189561157", "SexMCOwner69420"]
+  # A list of other staff, these players will have access to basic staff commands
+  # entrys can be either a name or xuid
+  Staff = ["a", "b"]

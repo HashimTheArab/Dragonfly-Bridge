@@ -1,8 +1,6 @@
 package utils
 
-const (
-)
-
 var (
-	ServerOPs = []string{""}
+	Admins = []string{}
+	Staff = []string{}
 )
