@@ -8,6 +8,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/go-gl/mathgl/mgl64"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,14 +30,15 @@ func StartServer() {
 		log.Fatalln(err)
 	}
 
-	utils.VelvetConfig()
-
 	w := Srv.World()
 	w.SetDefaultGameMode(world.GameModeSurvival{})
 	w.SetTime(0)
 	w.StopTime()
 
+	utils.VelvetConfig()
 	exts.Srv = Srv
+	exts.DefaultSpawn = Srv.World().Spawn().Vec3().Add(mgl64.Vec3{0, 1, 0})
+
 	for {
 		p, err := Srv.Accept()
 		if err != nil {

@@ -43,7 +43,7 @@ func (h PlayerHandler) HandleHurt(ctx *event.Context, _ *float64, source damage.
 	if (source == damage.SourceVoid{}) {
 		if h.Player.World().Name() == "World" {
 			ctx.Cancel()
-			h.Player.Teleport(exts.Srv.World().Spawn().Vec3())
+			h.Player.Teleport(exts.DefaultSpawn)
 		} else {
 			// session.game.get their spawn
 		}
