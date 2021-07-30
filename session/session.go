@@ -18,7 +18,7 @@ func (s *Session) SetFlag(flag uint32) {
 }
 
 func (s Session) HasFlag(flag uint32) bool {
-	return s.Flags & (1 << flag) == 1
+	return s.Flags & (1 << flag) > 0
 }
 
 func (s Session) IsStaff(CheckAdmin bool) bool {

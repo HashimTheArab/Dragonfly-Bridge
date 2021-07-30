@@ -1,6 +1,6 @@
 package utils
 
 var (
-	Admins = []string{}
-	Staff = []string{}
+	Admins []string
+	Staff  []string
 )

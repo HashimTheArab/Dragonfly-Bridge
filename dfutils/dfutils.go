@@ -33,6 +33,8 @@ func StartServer() {
 
 	w := Srv.World()
 	w.SetDefaultGameMode(world.GameModeSurvival{})
+	w.SetTime(0)
+	w.StopTime()
 
 	exts.Srv = Srv
 	for {
