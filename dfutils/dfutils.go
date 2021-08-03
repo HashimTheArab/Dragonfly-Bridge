@@ -1,10 +1,12 @@
 package dfutils
 
 import (
+	"VBridge/cblock"
 	"VBridge/dfutils/exts"
 	"VBridge/handlers"
 	"VBridge/session"
 	"VBridge/utils"
+	"VBridge/worldmanager"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/df-mc/dragonfly/server/world"
@@ -30,14 +32,18 @@ func StartServer() {
 		log.Fatalln(err)
 	}
 
+	world.RegisterBlock(cblock.EndPortal{})
+
+	utils.WorldManager = worldmanager.New(Srv, "worlds/", log)
 	w := Srv.World()
 	w.SetDefaultGameMode(world.GameModeSurvival{})
 	w.SetTime(0)
 	w.StopTime()
 
 	utils.VelvetConfig()
-	exts.Srv = Srv
-	exts.DefaultSpawn = Srv.World().Spawn().Vec3().Add(mgl64.Vec3{0, 1, 0})
+	utils.Srv = Srv
+	utils.DefaultSpawn = Srv.World().Spawn().Vec3().Add(mgl64.Vec3{0, 1, 0})
+	exts.TrackData()
 
 	for {
 		p, err := Srv.Accept()
@@ -45,5 +51,6 @@ func StartServer() {
 			return
 		}
 		p.Handle(&handlers.PlayerHandler{Player: p, Session: session.New(p)}) // Player Listener and Session
+		p.ShowCoordinates()
 	}
 }

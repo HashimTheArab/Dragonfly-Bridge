@@ -6,11 +6,11 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 )
 
-type BuildCommand struct {
+type Build struct {
 	Player []cmd.Target `optional:""`
 }
 
-func (t BuildCommand) Run(source cmd.Source, output *cmd.Output) {
+func (t Build) Run(source cmd.Source, output *cmd.Output) {
 	p := source.(*player.Player)
 	if !session.Get(p).HasFlag(session.Admin) {
 		p.Message(NoPermission)
@@ -24,7 +24,7 @@ func (t BuildCommand) Run(source cmd.Source, output *cmd.Output) {
 				target.Message("§b" + p.Name() + "§7 has set you out of §bbuilder §7mode!")
 				p.Message("§b" + target.Name() + "§7 is out of §bbuilder §7mode!")
 			} else {
-				target.Message("§b" + p.Name() + "§7 has set you §ain §bbuilder §7mode!")
+				target.Message("§b" + p.Name() + "§7 has set you in §bbuilder §7mode!")
 				p.Message("§b" + target.Name() + "§7 is now in §bbuilder §7mode!")
 			}
 			s.SetFlag(session.Builder)
