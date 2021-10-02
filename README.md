@@ -20,3 +20,8 @@ go build # this actually builds the file
 ```
 
 ### Example Images
+![example_1](https://media.discordapp.net/attachments/623917901409419274/871656749860519936/unknown-1.png)
+
+![example_2](https://media.discordapp.net/attachments/719190269672685608/871634864472981504/unknown.png)
+
+![example_3](https://media.discordapp.net/attachments/719190269672685608/871870861953601556/unknown.png)
