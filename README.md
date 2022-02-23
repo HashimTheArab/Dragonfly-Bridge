@@ -3,7 +3,7 @@ The Bridge MCPE created with the [Dragonfly](https://github.com/df-mc/dragonfly)
 
 this has some bugs so it shouldn't be used at its current state!
 
-but it can be ran on any architecture support by golang!
+However, it can be ran on any architecture supported by Golang!
 
 ## Running
 Simply open your terminal of choice and find the executable file of this project and run
