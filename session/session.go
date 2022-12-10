@@ -4,7 +4,6 @@ import (
 	"VBridge/dfutils/exts"
 	"VBridge/duels"
 	"VBridge/utils"
-	"github.com/df-mc/dragonfly/server/block/instrument"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/scoreboard"
 	"github.com/df-mc/dragonfly/server/world"
@@ -17,22 +16,22 @@ import (
 )
 
 type Session struct {
-	Player *player.Player
-	Match *duels.Duel
+	Player      *player.Player
+	Match       *duels.Duel
 	MatchPlayer *duels.DuelPlayer
 	MatchInvite *duels.Invite
-	Flags uint32
+	Flags       uint32
 }
 
 func (s *Session) SetFlag(flag uint32) {
 	s.Flags ^= 1 << flag
 }
 
-func (s Session) HasFlag(flag uint32) bool {
-	return s.Flags & (1 << flag) > 0
+func (s *Session) HasFlag(flag uint32) bool {
+	return s.Flags&(1<<flag) > 0
 }
 
-func (s Session) IsStaff(CheckAdmin bool) bool {
+func (s *Session) IsStaff(CheckAdmin bool) bool {
 	name := s.Player.Name()
 	xuid := s.Player.XUID()
 	if CheckAdmin {
@@ -60,7 +59,7 @@ func (s *Session) DefaultFlags() {
 	}
 }
 
-func (s *Session) AddToQueue(){
+func (s *Session) AddToQueue() {
 	if s.InQueue() || s.Match != nil {
 		return
 	}
@@ -79,19 +78,19 @@ func (s *Session) AddToQueue(){
 	}
 }
 
-func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session){
-	go func(){
+func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session) {
+	go func() {
 		id := uuid.NewString()
-		if err := utils.Unzip("worlds/bridge-1.zip", "worlds/" + id); err != nil {
+		if err := utils.Unzip("worlds/bridge-1.zip", "worlds/"+id); err != nil {
 			panic(err)
 		}
-		if err := utils.WorldManager.LoadWorld(id, id, 6); err != nil {
+		if err := utils.WorldManager.LoadWorld(id, id); err != nil {
 			panic(err)
 		}
 		w, _ := utils.WorldManager.World(id)
 		duel := &duels.Duel{
-			Arena:  w,
-			UUID:   id,
+			Arena: w,
+			UUID:  id,
 		}
 		tPlayer := &duels.DuelPlayer{
 			SpawnPoint: mgl64.Vec3{30, 69, 0},
@@ -110,7 +109,7 @@ func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session){
 		for num, pl := range duel.Players {
 			w.AddEntity(pl.Player)
 			pl.Player.Teleport(pl.SpawnPoint)
-			pl.Player.SetGameMode(world.GameModeSurvival{})
+			pl.Player.SetGameMode(world.GameModeSurvival)
 			duel.SendKit(pl.Player, pl.Team.Color())
 			pl.Player.SetImmobile()
 			sessionList[num].Match = duel
@@ -133,7 +132,7 @@ func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session){
 			if i <= 3 {
 				for _, pl := range duel.Players {
 					pl.Player.PlaySound(sound.Note{
-						Instrument: instrument.Piano(),
+						Instrument: sound.Piano(),
 						Pitch:      0,
 					})
 				}
@@ -145,12 +144,12 @@ func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session){
 			duel.SendKit(pl.Player, pl.Team.Color())
 			pl.Player.SetMobile()
 			pl.Player.PlaySound(sound.Note{
-				Instrument: instrument.Piano(),
+				Instrument: sound.Piano(),
 				Pitch:      1,
 			})
 		}
 		dv.Waiting.Store(false)
-		go func(){
+		go func() {
 			for {
 				if duel == nil {
 					return
@@ -163,7 +162,7 @@ func (s *Session) StartMatch(p, t *player.Player, sessionList []*Session){
 	}()
 }
 
-func (s Session) InQueue() bool {
+func (s *Session) InQueue() bool {
 	for _, p := range duels.Queue {
 		if p.Name() == s.Player.Name() {
 			return true
@@ -172,7 +171,7 @@ func (s Session) InQueue() bool {
 	return false
 }
 
-func (s Session) RemoveFromQueue(){
+func (s *Session) RemoveFromQueue() {
 	if s.InQueue() {
 		var New []*player.Player
 		for _, p := range duels.Queue {
@@ -184,7 +183,7 @@ func (s Session) RemoveFromQueue(){
 	}
 }
 
-func (s *Session) RemoveFromMatch(){
+func (s *Session) RemoveFromMatch() {
 	if s.Match != nil {
 		for _, p := range s.Match.Players {
 			ses := Get(p.Player)
@@ -202,8 +201,8 @@ func (s *Session) TeleportToSpawn() {
 	s.Player.Teleport(utils.DefaultSpawn)
 }
 
-func (s *Session) Scoreboard(){
-	go func(){
+func (s *Session) Scoreboard() {
+	go func() {
 		for {
 			if s == nil || s.Player == nil {
 				return
@@ -216,7 +215,7 @@ func (s *Session) Scoreboard(){
 	}()
 }
 
-func (s *Session) DefaultScoreboard(){
+func (s *Session) DefaultScoreboard() {
 	sb := scoreboard.New("§3Velvet Bridge")
 	_, _ = sb.WriteString("§bOnline: §3" + exts.Online.String() + "\n§bMatches: §3" + exts.Matches.String() + "\n\n§bvelvetpractice.live")
 	s.Player.SendScoreboard(sb)
