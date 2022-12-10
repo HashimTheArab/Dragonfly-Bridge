@@ -5,6 +5,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/df-mc/dragonfly/server/world/mcdb"
+	"github.com/df-mc/goleveldb/leveldb/opt"
 	"github.com/sirupsen/logrus"
 	"os"
 	"sync"
@@ -60,9 +61,11 @@ func (m *WorldManager) World(name string) (*world.World, bool) {
 }
 
 // LoadWorld ...
-func (m *WorldManager) LoadWorld(folderName, worldName string, simulationDistance int) error {
-	w := world.New(m.log, simulationDistance)
-	p, err := mcdb.New(m.folderPath + "/" + folderName)
+func (m *WorldManager) LoadWorld(folderName, worldName string) error {
+	if _, ok := m.World(worldName); ok {
+		return fmt.Errorf("world is already loaded")
+	}
+	p, err := mcdb.New(m.log, m.folderPath+"/"+folderName, opt.DefaultCompression)
 	if err != nil {
 		return fmt.Errorf("error loading world: %v", err)
 	}
@@ -71,10 +74,11 @@ func (m *WorldManager) LoadWorld(folderName, worldName string, simulationDistanc
 	settings.Name = worldName
 	p.SaveSettings(settings)
 
-	w.Provider(p)
-	if _, ok := m.World(w.Name()); ok {
-		return fmt.Errorf("world is already loaded")
-	}
+	w := world.Config{
+		Dim:      world.Overworld,
+		Log:      m.log,
+		Provider: p,
+	}.New()
 
 	m.worldsMu.Lock()
 	m.worlds[w.Name()] = w

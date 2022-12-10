@@ -1,9 +1,9 @@
 # Dragonfly-Bridge
 The Bridge MCPE created with the [Dragonfly](https://github.com/df-mc/dragonfly) server software in Go!
 
-This has some bugs so it shouldn't be used at its current state!
+This has some bugs, so it shouldn't be used at its current state!
 
-However, it can be ran on any architecture supported by Golang!
+However, it can be run on any architecture supported by Golang!
 
 ## Running
 Simply open your terminal of choice and find the executable file of this project and run

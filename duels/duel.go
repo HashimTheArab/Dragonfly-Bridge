@@ -4,10 +4,7 @@ import (
 	"VBridge/utils"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/block"
-	"github.com/df-mc/dragonfly/server/block/instrument"
 	"github.com/df-mc/dragonfly/server/item"
-	"github.com/df-mc/dragonfly/server/item/armour"
-	"github.com/df-mc/dragonfly/server/item/tool"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/df-mc/dragonfly/server/player/scoreboard"
@@ -23,39 +20,39 @@ import (
 )
 
 type Duel struct {
-	Players []*DuelPlayer
-	Arena *world.World
-	UUID string
+	Players     []*DuelPlayer
+	Arena       *world.World
+	UUID        string
 	ElapsedTime atomic.Uint32
-	Waiting atomic.Bool
+	Waiting     atomic.Bool
 }
 
 type DuelPlayer struct {
-	Kills uint32
+	Kills      uint32
 	SpawnPoint mgl64.Vec3
-	Player *player.Player
-	Team *Team
+	Player     *player.Player
+	Team       *Team
 }
 
 type Team struct {
-	Name string
+	Name   string
 	Points uint32
 }
 
 type matches struct {
-	List map[string]*Duel
+	List  map[string]*Duel
 	mutex sync.RWMutex
 }
 
 const (
-	TeamRed = "Red"
+	TeamRed  = "Red"
 	TeamBlue = "Blue"
 )
 
 var Matches = matches{List: map[string]*Duel{}}
 var Queue []*player.Player
 
-func (m *matches) Add(d *Duel){
+func (m *matches) Add(d *Duel) {
 	m.mutex.Lock()
 	m.List[d.UUID] = d
 	m.mutex.Unlock()
@@ -67,7 +64,7 @@ func (m *matches) Get(d *Duel) *Duel {
 	return m.List[d.UUID]
 }
 
-func (m *matches) Delete(d *Duel){
+func (m *matches) Delete(d *Duel) {
 	m.mutex.Lock()
 	delete(m.List, d.UUID)
 	m.mutex.Unlock()
@@ -79,7 +76,7 @@ func (m *matches) Amount() int {
 	return len(m.List)
 }
 
-func (Duel) SendKit(p *player.Player, ColorString string){
+func (*Duel) SendKit(p *player.Player, ColorString string) {
 	var ItemColor item.Colour
 	if ColorString == "§c" {
 		ItemColor = item.ColourRed()
@@ -88,21 +85,21 @@ func (Duel) SendKit(p *player.Player, ColorString string){
 	}
 	inv := p.Inventory()
 	inv.Clear()
-	_ = inv.SetItem(0, item.NewStack(item.Sword{Tier: tool.TierIron}, 1))
+	_ = inv.SetItem(0, item.NewStack(item.Sword{Tier: item.ToolTierIron}, 1))
 	// _ = inv.SetItem(1, item.NewStack(item.Bow, 1)) projectiles wen
-	_ = inv.SetItem(1, item.NewStack(item.Pickaxe{Tier: tool.TierDiamond}, 1))
+	_ = inv.SetItem(1, item.NewStack(item.Pickaxe{Tier: item.ToolTierDiamond}, 1))
 	_ = inv.SetItem(2, item.NewStack(block.Concrete{Colour: ItemColor}, 64))
 	_ = inv.SetItem(8, item.NewStack(item.GoldenApple{}, 4))
 	// _ = inv.SetItem(8, item.NewStack(item.Arrow, 1)) projectiles wen
 
 	a := p.Armour()
-	a.SetHelmet(item.NewStack(item.Helmet{Tier: armour.TierLeather}, 1))
-	a.SetChestplate(item.NewStack(item.Chestplate{Tier: armour.TierLeather}, 1))
-	a.SetLeggings(item.NewStack(item.Leggings{Tier: armour.TierLeather}, 1))
-	a.SetBoots(item.NewStack(item.Boots{Tier: armour.TierLeather}, 1))
+	a.SetHelmet(item.NewStack(item.Helmet{Tier: item.ArmourTierLeather{}}, 1))
+	a.SetChestplate(item.NewStack(item.Chestplate{Tier: item.ArmourTierLeather{}}, 1))
+	a.SetLeggings(item.NewStack(item.Leggings{Tier: item.ArmourTierLeather{}}, 1))
+	a.SetBoots(item.NewStack(item.Boots{Tier: item.ArmourTierLeather{}}, 1))
 }
 
-func (d *Duel) TeleportPlayerToSpawn(p *player.Player){
+func (d *Duel) TeleportPlayerToSpawn(p *player.Player) {
 	d.Arena.AddEntity(p)
 	for _, pl := range d.Players {
 		if pl.Player.Name() == p.Name() {
@@ -112,7 +109,7 @@ func (d *Duel) TeleportPlayerToSpawn(p *player.Player){
 }
 
 func (d *Duel) RemovePlayer(p *player.Player) {
-	go func(){
+	go func() {
 		var winner *DuelPlayer
 		var loser *DuelPlayer
 		for _, pl := range d.Players {
@@ -126,7 +123,7 @@ func (d *Duel) RemovePlayer(p *player.Player) {
 		if winner == nil {
 			winner = d.GetDuelPlayer(p)
 		}
-		t := title.New(winner.Team.Color() + winner.Team.Name + " won").WithSubtitle(winner.Team.Color() + strconv.FormatUint(uint64(winner.Team.Points), 10), "§7-", loser.Team.Color() + strconv.FormatUint(uint64(loser.Team.Points), 10))
+		t := title.New(winner.Team.Color()+winner.Team.Name+" won").WithSubtitle(winner.Team.Color()+strconv.FormatUint(uint64(winner.Team.Points), 10), "§7-", loser.Team.Color()+strconv.FormatUint(uint64(loser.Team.Points), 10))
 		for _, pl := range []*DuelPlayer{winner, loser} {
 			pl.Player.SendTitle(t)
 			pl.Player.Message(winner.Team.Color() + winner.Player.Name() + "§e has won!")
@@ -141,7 +138,7 @@ func (d *Duel) RemovePlayer(p *player.Player) {
 		_, _ = fmt.Fprintf(chat.Global, "§a%v §7won a match against §c%v!\n", winner.Player.Name(), p.Name())
 		uuid := d.UUID
 		Matches.Delete(d)
-		go func(){
+		go func() {
 			if w, ok := utils.WorldManager.World(uuid); ok {
 				_ = utils.WorldManager.UnloadWorld(w)
 			}
@@ -186,14 +183,14 @@ func (d *Duel) Score(p *DuelPlayer) {
 		}
 		return
 	}
-	go func(){
+	go func() {
 		if d == nil {
 			return
 		}
 		ttl := title.New(t.Color() + p.Player.Name() + " scored")
 		d.Waiting.Store(true)
 		for _, pl := range d.Players {
-			pl.Player.Message(t.Color() + p.Player.Name() + "§e has scored. §d" + strconv.FormatUint(uint64(3 - t.Points), 10) + "§e more to win!")
+			pl.Player.Message(t.Color() + p.Player.Name() + "§e has scored. §d" + strconv.FormatUint(uint64(3-t.Points), 10) + "§e more to win!")
 			pl.Player.Teleport(pl.SpawnPoint)
 			pl.Player.SetImmobile()
 			d.SendKit(pl.Player, pl.Team.Color())
@@ -208,7 +205,7 @@ func (d *Duel) Score(p *DuelPlayer) {
 			if i <= 3 {
 				for _, pl := range d.Players {
 					pl.Player.PlaySound(sound.Note{
-						Instrument: instrument.Piano(),
+						Instrument: sound.Piano(),
 						Pitch:      0,
 					})
 				}
@@ -218,7 +215,7 @@ func (d *Duel) Score(p *DuelPlayer) {
 		for _, pl := range d.Players {
 			pl.Player.SetMobile()
 			pl.Player.PlaySound(sound.Note{
-				Instrument: instrument.Piano(),
+				Instrument: sound.Piano(),
 				Pitch:      1,
 			})
 		}
@@ -226,9 +223,9 @@ func (d *Duel) Score(p *DuelPlayer) {
 	}()
 }
 
-func (d Duel) GetElapsedTime() string {
+func (d *Duel) GetElapsedTime() string {
 	t := d.ElapsedTime.Load()
-	return strconv.FormatUint(uint64(t / 60), 10) + ":" + strconv.FormatUint(uint64(t % 60), 10)
+	return strconv.FormatUint(uint64(t/60), 10) + ":" + strconv.FormatUint(uint64(t%60), 10)
 }
 
 func (d *Duel) BroadcastScoreboard() {

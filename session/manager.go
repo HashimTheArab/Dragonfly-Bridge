@@ -16,7 +16,7 @@ func Get(p *player.Player) *Session {
 	return sessions[p.Name()]
 }
 
-func (s Session) Close() {
+func (s *Session) Close() {
 	s.RemoveFromQueue()
 	s.RemoveFromMatch()
 	delete(sessions, s.Player.Name())

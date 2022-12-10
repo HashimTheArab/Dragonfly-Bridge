@@ -11,10 +11,10 @@ import (
 
 type Gamemode struct {
 	GameMode string
-	Player []cmd.Target `optional:""`
+	Player   []cmd.Target `optional:""`
 }
 
-func (t Gamemode) Run(source cmd.Source, output *cmd.Output){
+func (t Gamemode) Run(source cmd.Source, output *cmd.Output) {
 	p := source.(*player.Player)
 	if !session.Get(p).HasFlag(session.Admin) {
 		p.Message(NoPermission)
@@ -22,17 +22,17 @@ func (t Gamemode) Run(source cmd.Source, output *cmd.Output){
 	}
 	var gm world.GameMode
 	switch strings.ToLower(t.GameMode) {
-		case "survival", "0", "s":
-			gm = world.GameModeSurvival{}
-		case "creative", "1", "c":
-			gm = world.GameModeCreative{}
-		case "adventure", "2", "a":
-			gm = world.GameModeAdventure{}
-		case "spectator", "3", "sp":
-			gm = world.GameModeSpectator{}
-		default:
-			output.Error("§cInvalid Gamemode!")
-			return
+	case "survival", "0", "s":
+		gm = world.GameModeSurvival
+	case "creative", "1", "c":
+		gm = world.GameModeCreative
+	case "adventure", "2", "a":
+		gm = world.GameModeAdventure
+	case "spectator", "3", "sp":
+		gm = world.GameModeSpectator
+	default:
+		output.Error("§cInvalid Gamemode!")
+		return
 	}
 
 	if len(t.Player) > 0 {
